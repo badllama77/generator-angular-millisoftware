@@ -1,1 +1,1 @@
-# generator-angular-e7
+# generator-angular-millisoftware
