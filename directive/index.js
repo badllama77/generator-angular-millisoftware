@@ -48,15 +48,6 @@ module.exports = generators.Base.extend({
           }
         },
         {
-          type: 'input',
-          name: 'location',
-          message: 'What location would you like? (e.g. _.hf.ecu)',
-          when: function () { return _.isUndefined(options.location) },
-          validate: function (answer) {
-            return _this._validateNamespace(answer)  || 'Must contain letters, underscore, and period only.';
-          }
-        },
-        {
           type: 'checkbox',
           name: 'restrict',
           message: 'What restriction type would you like?',
@@ -112,7 +103,7 @@ module.exports = generators.Base.extend({
           type: 'confirm',
           name: 'controller',
           message: 'Would you like a controller?',
-          when: function (answers) { return _.isUndefined(options.controller) && !answers.link }
+          when: function (answers) { return _.isUndefined(options.controller) }
         },
         {
           type: 'confirm',
@@ -125,7 +116,7 @@ module.exports = generators.Base.extend({
           type: 'input',
           name: 'require',
           message: 'Enter the directives you require? (e.g. ^MyController, MyController2)',
-          when: function (answers) { return _.isUndefined(options.controller) && answers.addRequire },
+          when: function (answers) { return answers.addRequire },
           validate: function (answer) {
             if (_.isUndefined(answer) || answer === null) {
               return
@@ -143,7 +134,6 @@ module.exports = generators.Base.extend({
         this.options.isolate    = this.options.isolate || answers.isolate;
         this.options.templateUrl = this.options.templateUrl || answers.templateUrl;
         this.options.template = this.options.template || answers.template;
-        this.options.location    = this.options.location || answers.location;
         this.options.controller = this.options.controller || answers.controller;
         this.options.require = this.options.require || answers.require;
         done();
@@ -160,12 +150,10 @@ module.exports = generators.Base.extend({
     if (this.options.transclude)  { templateOptions.push('    transclude: true')};
     if (this.options.controller)  { templateOptions.push("    controller: function ($scope, $log) {\n\n    }")};
     if (this.options.link)        { templateOptions.push('    link: function (scope, element, attr) {\n\n    }')};
-    if(this.options.location) {
-      destination = this.options.location.split('.').join('/');
-    }
+
     this.fs.copyTpl(
       this.templatePath('directive.tmpl'),
-      this.destinationPath(destination + '/' + this.options.name + '.js'),
+      this.destinationPath(_getDestination(this.options.name, '-directive.js')),
       {
         module: this.options.module,
         options: templateOptions.join(',\n'),
@@ -194,11 +182,8 @@ module.exports = generators.Base.extend({
     });
     return result;
   },
-  _getDestination: function (name, extension, location) {
-    var destination = 'state';
-    if(location) {
-      destination += location.split('.').join('/');
-    }
-    return destination + '/' + _.kebabCase(name) + extension;
+  _getDestination: function (name, extension, destination) {
+    var destination = destination || 'scripts/directives';
+    return destination + '/' + _.kebabCase(_.toLowerCase(name)) + extension;
   }
 });

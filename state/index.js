@@ -79,8 +79,7 @@ module.exports = generators.Base.extend({
         default: function (answers) {
           var name = _this.options.name || answers.name;
           var location = _this.options.location || answers.location;
-          return _this._getDestination(_.kebabCase(name), '.html', location);
-
+          return _this._getDestination(_.kebabCase(name), '.html', location, 'views');
         },
         when: function (answers) { return answers.templateType == 'URL' }
       },
@@ -136,19 +135,11 @@ module.exports = generators.Base.extend({
         name: _.capitalize(this.options.controller)
       }
     );
-    if (this.options.templateType != 'Provider' || this.options.templateType != 'None') {
-      this.fs.copyTpl(
-        this.templatePath('state-css.tmpl'),
-        this.destinationPath(this._getDestination(this.options.name, '.scss', this.options.location)),
-        {
-          name: _.kebabCase(this.options.name)
-        }
-      );
       this.fs.copyTpl(
         this.templatePath('state-html.tmpl'),
-        this.destinationPath(this._getDestination(this.options.name, '-view.ng.html', this.options.location)),
+        this.destinationPath(this.options.templateUrl),
         {
-          name: _.kebabCase(this.options.name)
+          name: _.kebabCase(_toLower(this.options.name))
         }
       );
     }
@@ -163,8 +154,8 @@ module.exports = generators.Base.extend({
   _validateRestrict: function (restrict) {
     return !!restrict.match(/^[AEC]{1,3}$/);
   },
-  _getDestination: function (name, extension, location) {
-    var destination = 'states';
+  _getDestination: function (name, extension, location, destination) {
+    var destination = destination || 'states';
     if(location) {
       var paths = location.split('.');
       paths.push(_.kebabCase(name));
